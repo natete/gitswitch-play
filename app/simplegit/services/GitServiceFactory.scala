@@ -1,4 +1,4 @@
-package simplegit.account.common.services
+package simplegit.services
 
 import javax.inject.Inject
 

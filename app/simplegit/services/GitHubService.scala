@@ -1,12 +1,13 @@
-package simplegit.account.common.services
+package simplegit.services
 
 import javax.inject.Inject
 
 import play.api.Configuration
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSClient
 import simplegit.account.dao.AccountDAO
 import simplegit.account.model.Account
+import simplegit.repository.model.Repository
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -20,6 +21,7 @@ class GitHubService @Inject()(override val ws: WSClient,
 
   private val REGISTER_ACCOUNT_URL = "https://github.com/login/oauth/access_token"
   private val GET_ACCOUNT = "https://api.github.com/user"
+  private val GET_REPOSITORIES = "https://api.github.com/user/repos"
   private lazy val CLIENT_ID = configuration.underlying.getString("simplegit.appId")
   private lazy val CLIENT_SECRET = configuration.underlying.getString("simplegit.appSecret")
 
@@ -61,4 +63,28 @@ class GitHubService @Inject()(override val ws: WSClient,
     }
   }
 
+  override def getRepositories(token: String): Future[Seq[Repository]] = {
+    ws.url(GET_REPOSITORIES).withHeaders("Authorization" -> s"token $token").get().map {
+      response =>
+        val jsonResponse = response.json.as[List[JsValue]]
+
+        jsonResponse.map(
+          repo =>
+            Repository(
+              id = (repo \ "id").as[Long],
+              name = (repo \ "full_name").as[String],
+              repoType = "GITHUB",
+              username = (repo \ "owner" \ "login").as[String],
+              accountId = (repo \ "owner" \ "id").as[Long],
+              canAdmin = true,
+              age = (repo \ "created_at").as[String],
+              updated = (repo \ "updated_at").as[String],
+              language = (repo \ "language").asOpt[String].getOrElse(""),
+              issues = (repo \ "open_issues_count").as[Int]
+            )
+        )
+
+
+    }
+  }
 }

@@ -24,8 +24,8 @@ class AccountDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvide
   def create(account: Account): Future[Account] =
     db.run(accounts returning accounts.map(_.id) += account).map(newId => account.copy(id = Some(newId)))
 
-  def delete(accountId: Long, userId: Long): Future[Unit] =
-    db.run(accounts.filter(account => account.id === accountId && account.ownerId === userId).delete).map(_ => ())
+  def delete(accountId: Int, userId: Long): Future[Unit] =
+    db.run(accounts.filter(account => account.accountId === accountId && account.ownerId === userId).delete).map(_ => ())
 
   private class Accounts(tag: Tag) extends Table[Account](tag, "git_account") {
     def id: Rep[Long] = column[Long]("id", O.PrimaryKey, O.AutoInc)

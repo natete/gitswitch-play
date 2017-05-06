@@ -12,7 +12,10 @@ POST          /oauth/token                              authentication.controlle
 # Accounts
 GET           /api/simple_git/account                   simplegit.account.controllers.AccountController.getAccounts
 POST          /api/simple_git/account                   simplegit.account.controllers.AccountController.addAccount
-DELETE        /api/simple_git/account/:accountId        simplegit.account.controllers.AccountController.removeAccount(accountId: Long)
+DELETE        /api/simple_git/account/:accountId        simplegit.account.controllers.AccountController.removeAccount(accountId: Int)
+
+# Repositories
+GET           /api/simple_git/repository                simplegit.repository.controllers.ReposController.getRepositories
 
 # Map static resources from the /public folder to the /assets URL path
 GET           /assets/*file                             controllers.Assets.at(path="/public", file)

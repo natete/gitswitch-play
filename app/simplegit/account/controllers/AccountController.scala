@@ -6,9 +6,8 @@ import authentication.controllers.security.SecuredController
 import authentication.service.AuthenticationService
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent}
-import simplegit.account.common.services.GitServiceFactory
-import simplegit.account.dao.AccountDAO
 import simplegit.account.model.GitAccountRequest
+import simplegit.services.GitServiceFactory
 import util.ResponseUtil
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -16,15 +15,14 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   * Created by natete on 16/04/17.
   */
-class AccountController @Inject()(accountDAO: AccountDAO,
-                                  gitServiceFactory: GitServiceFactory,
+class AccountController @Inject()(gitServiceFactory: GitServiceFactory,
                                   implicit private val authenticationService: AuthenticationService,
                                   implicit override val executionContext: ExecutionContext) extends SecuredController {
 
   def getAccounts: Action[AnyContent] = AuthenticatedActionWithPayload {
     (_, tokenPayload) =>
 
-      accountDAO.getAccounts(tokenPayload.userId).map(accounts => Ok(Json.toJson(accounts)))
+      gitServiceFactory.getGitService().getAllAccounts(tokenPayload.userId).map(accounts => Ok(Json.toJson(accounts)))
   }
 
   def addAccount(): Action[JsValue] = AuthenticatedActionWithPayload(parse.json) {
@@ -42,7 +40,7 @@ class AccountController @Inject()(accountDAO: AccountDAO,
       )
   }
 
-  def removeAccount(accountId: Long): Action[AnyContent] = AuthenticatedActionWithPayload {
+  def removeAccount(accountId: Int): Action[AnyContent] = AuthenticatedActionWithPayload {
     (_, tokenPayload) =>
       gitServiceFactory
         .getGitService()
